@@ -5,12 +5,17 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import axios from 'axios'
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
-import UserType from "../../components/usertype/usertype.component";
+import { useNavigate } from 'react-router-dom'
 
 export default function CreateUser() {
   const navigate = useNavigate();
- 
+  useEffect(() => {
+    const auth = localStorage.getItem('token');
+    if(!auth)
+    {
+      navigate("/")
+    }
+  },[])
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState()
@@ -18,7 +23,38 @@ export default function CreateUser() {
   const [user_type, setUserType] = useState()
   const [validationError,setValidationError] = useState({})
 
-  
+  const [options, setOptions] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const fromDb = undefined;
+
+      let data = fromDb || [];
+      // Fetch data
+       data  = await fetch("http://127.0.0.1:8000/api/usertype/",{
+        headers:{
+          authorization: 'Bearer '+localStorage.getItem('token')
+        }
+      });
+      console.log(data);
+      const results = []
+      // Store results in the results array
+      data.forEach((value) => {
+        results.push({
+          key: value.name,
+          value: value.id,
+        });
+      });
+      // Update the options state
+      setOptions([
+        {key: 'Select a company', value: ''}, 
+        ...results
+      ])
+    }
+
+    // Trigger the fetch
+    fetchData();
+  }, []);
  
   const CreateUser = async (e) => {
     e.preventDefault();
@@ -121,9 +157,15 @@ export default function CreateUser() {
                       <Col>
                         <Form.Group controlId="UserType">
                             <Form.Label>User Type</Form.Label>
-                            
-                            <UserType />
-                            
+                            <Form.Control id={name} name={name}  as={Form.Select}>
+                              {options.map((option) => {
+                                return (
+                                  <option key={option.value} value={option.value}>
+                                    {option.key}
+                                  </option>
+                                );
+                              })}
+                            </Form.Control>
                         </Form.Group>
                       </Col>
                   </Row>

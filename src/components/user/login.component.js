@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Row from 'react-bootstrap/Row';
@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import axios from 'axios'
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom'
+import { useSignIn } from "react-auth-kit";
 
 export default function CreateLogin() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function CreateLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState()
   const [validationError,setValidationError] = useState({})
-  
+  const signIn = useSignIn();
  
   const CreateLogin = async (e) => {
     e.preventDefault();
@@ -31,9 +32,17 @@ export default function CreateLogin() {
         icon:"success",
         text:data.message
       })
+      signIn({
+        token:data.data.token,
+        expiresIn:3600,
+        tokenType:"Bearer",
+        authState:{email:data.data.name}
+      });
+	 // setauthenticated(true)
+      //localStorage.setItem("authenticated", true);
       localStorage.setItem('token',data.data.token);
       localStorage.setItem('name',data.data.name);
-      navigate("/user/create")
+      navigate("/home")
     }).catch(({response})=>{
       if(response.status===422){
         setValidationError(response.data.errors)
@@ -72,7 +81,7 @@ export default function CreateLogin() {
                     </div>
                   )
                 }
-                <Form onSubmit={CreateLogin}>
+                <Form onSubmit={CreateLogin} >
                   
                   <Row className="my-3">
                       <Col>
@@ -108,3 +117,5 @@ export default function CreateLogin() {
     </div>
   )
 }
+
+
